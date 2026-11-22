@@ -1,0 +1,63 @@
+struct MonotonicStack {
+    vector<int> a;
+    int n;
+
+    MonotonicStack(const vector<int>& arr) {
+        a = arr;
+        n = a.size();
+    }
+
+    // -----------------------------
+    // Index-based functions 
+    // -----------------------------
+
+    // Next Greater Element Index (Right)
+    vector<int> nextGreaterIndex() {
+        vector<int> res(n, n); // n = no element
+        stack<int> st;
+        for (int i = n - 1; i >= 0; i--) {
+            while (!st.empty() && a[st.top()] <= a[i]) st.pop();
+            if (!st.empty()) res[i] = st.top();
+            st.push(i);
+        }
+        return res;
+    }
+
+    // Next Smaller Element Index (Right)
+    vector<int> nextSmallerIndex() {
+        vector<int> res(n, n);
+        stack<int> st;
+        for (int i = n - 1; i >= 0; i--) {
+            while (!st.empty() && a[st.top()] >= a[i]) st.pop();
+            if (!st.empty()) res[i] = st.top();
+            st.push(i);
+        }
+        return res;
+    }
+
+    // Previous Greater Element Index (Left)
+    vector<int> prevGreaterIndex() {
+        vector<int> res(n, -1);
+        stack<int> st;
+        for (int i = 0; i < n; i++) {
+            while (!st.empty() && a[st.top()] <= a[i]) st.pop();
+            if (!st.empty()) res[i] = st.top();
+            st.push(i);
+        }
+        return res;
+    }
+
+    // Previous Smaller Element Index (Left)
+    vector<int> prevSmallerIndex() {
+        vector<int> res(n, -1);
+        stack<int> st;
+        for (int i = 0; i < n; i++) {
+            while (!st.empty() && a[st.top()] >= a[i]) st.pop();
+            if (!st.empty()) res[i] = st.top();
+            st.push(i);
+        }
+        return res;
+    }
+
+    
+};

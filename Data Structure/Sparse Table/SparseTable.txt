@@ -1,0 +1,81 @@
+struct SparseTable {
+    int n, LOG;
+    vector<vector<int>> st;
+    vector<int> lg;
+
+    SparseTable(const vector<int>& a) {
+        n = a.size();
+        if (n == 0) return; 
+        LOG = 32 - __builtin_clz(n);
+
+        st.assign(LOG, vector<int>(n));
+        lg.assign(n + 1, 0);
+
+        for (int i = 2; i <= n; i++)
+            lg[i] = lg[i / 2] + 1;
+
+        for (int i = 0; i < n; i++)
+            st[0][i] = a[i];
+
+        for (int j = 1; j < LOG; j++) {
+            for (int i = 0; i + (1 << j) <= n; i++) {
+                st[j][i] = merge(st[j - 1][i],
+                                 st[j - 1][i + (1 << (j - 1))]);
+            }
+        }
+    }
+
+    inline int merge(int a, int b) {
+        return (a & b); 
+    }
+
+    inline int query(int l, int r) {
+        int j = lg[r - l + 1];
+        return merge(st[j][l],
+                     st[j][r - (1 << j) + 1]);
+    }
+};
+
+
+struct SparseTable {
+    int n, LOG;
+    vector<vector<long long>> st;
+    vector<int> lg;
+
+    SparseTable(const vector<int>& a) {
+        n = a.size();
+        if (n == 0) return; 
+        LOG = 32 - __builtin_clz(n);
+
+        st.assign(LOG, vector<long long>(n));
+        lg.assign(n + 1, 0);
+
+        for (int i = 2; i <= n; i++)
+            lg[i] = lg[i / 2] + 1;
+
+        for (int i = 0; i < n; i++)
+            st[0][i] = a[i];
+
+        for (int j = 1; j < LOG; j++) {
+            for (int i = 0; i + (1 << j) <= n; i++) {
+                st[j][i] = merge(st[j - 1][i],
+                                 st[j - 1][i + (1 << (j - 1))]);
+            }
+        }
+    }
+
+    inline long long merge(long long a, long long b) {
+        return a + b; 
+    }
+
+    inline long long query(int l, int r) {
+        long long sum = 0;
+        for (int j = LOG - 1; j >= 0; j--) {
+            if ((1 << j) <= (r - l + 1)) {
+                sum += st[j][l];
+                l += (1 << j);
+            }
+        }
+        return sum;
+    }
+};

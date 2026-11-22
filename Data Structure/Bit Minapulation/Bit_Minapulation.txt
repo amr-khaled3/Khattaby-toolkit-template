@@ -1,0 +1,38 @@
+namespace Bit_Manipulation{
+    // ~x means the bitwise NOT of x(complement)
+    // preporties of XOR: a ^ a = 0, a ^ 0 = a
+    // parity:- if(x & 1) return odd;
+    // the inverse of ^ is itself, a ^ b = c -> a ^ c = b and b ^ c = a
+    // __builtin_clzll(x) -> the number of leading zeros(leftmost for 64 bit)
+    // __builtin_ctzll(x) -> the number of trailing zeros(rightmost for 64 bit)
+    // __builtin_popcountll(x) -> the number of set bits in x
+    vector<LL> get_representation(LL n, LL b){
+        if(b == 1) return vector<LL>(1, n);
+        else if(n == 0) return {0};
+        vector<LL> res;
+        while(n > 0) res.pb(n % b), n /= b;
+        // while(sz(res) < 32) res.pb(0);
+        // reverse(all(res));
+        return res; }
+    bool isON(LL n, LL k){
+        // or return (n >> k) & 1;
+        return n & (1LL << k); }
+    LL toggle(LL n, LL k){
+        return n ^ (1LL << k); }
+    LL set_bit(LL n, LL k){
+        return n | (1LL << k); }
+    LL clear_bit(LL n, LL k){
+        return n & (~(1LL << k)); }
+    LL count_ones(LL n){
+        return __builtin_popcountll(n); }
+    LL is_power_of_two(LL n){
+        return n > 0 && (n & (n - 1)) == 0; }
+    
+    // if you want a val make shift left by k, use (1LL << k) instead of (1 << k) to avoid overflow
+    // if val is -1, means n = 0
+    LL lsb_pos(LL n){
+        return (n == 0) ? -1 : __builtin_ctzll(n); }
+    LL msb_pos(LL n){
+        if(n == 0) return -1;
+        return 63 - __builtin_clzll(n); } 
+}

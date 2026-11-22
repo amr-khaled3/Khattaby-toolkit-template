@@ -1,0 +1,83 @@
+struct Trie {
+    struct Node {
+        Node *ch[26];
+        int endCount;
+        int minDepth;
+        int prefix;
+
+        int bestFreq;
+        string bestWord;
+
+        Node() {
+            memset(ch, 0, sizeof ch);
+            endCount = 0;
+            prefix = 0;
+            minDepth = INT_MAX;
+
+            bestFreq = 0;
+            bestWord = "";
+        }
+    };
+
+    Node *root = new Node();
+
+    void insert(const string &s, int freq) {
+        Node *cur = root;
+
+        for (char c : s) {
+            int idx = c - 'a';
+
+            if (!cur->ch[idx])
+                cur->ch[idx] = new Node();
+
+            cur = cur->ch[idx];
+
+            cur->prefix++;
+
+            if (freq > cur->bestFreq ||
+                (freq == cur->bestFreq && (cur->bestWord.empty() || s < cur->bestWord))) {
+                cur->bestFreq = freq;
+                cur->bestWord = s;
+            }
+        }
+
+        cur->endCount++;
+    }
+
+    pair<string,int> query(const string &s) {
+        Node *cur = root;
+
+        for (char c : s) {
+            int idx = c - 'a';
+
+            if (!cur->ch[idx])
+                return {"", 0};
+
+            cur = cur->ch[idx];
+        }
+
+        return {cur->bestWord, cur->bestFreq};
+    }
+        LL countWordsEqualTo(const string &s){
+        Node *cur = root;
+        for(char c : s){
+            int idx = c - 'a';
+            if(!cur->ch[idx]){
+                return 0;
+            }
+            cur = cur->ch[idx];
+        }
+        return cur->endCount;
+    }
+
+    LL countWordsStartingWith(const string &s) {
+        Node *cur = root;
+        for (char c : s) {
+            int idx = c - 'a';
+            if (!cur->ch[idx])
+                return 0;
+            cur = cur->ch[idx];
+        }
+        return cur->prefix;
+    }
+};

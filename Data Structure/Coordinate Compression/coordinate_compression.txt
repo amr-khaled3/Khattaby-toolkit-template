@@ -1,0 +1,43 @@
+struct CoordinateCompression {
+    vector<long long> vals;
+
+    CoordinateCompression() = default;
+
+    template<typename T>
+    CoordinateCompression(const vector<T>& v) {
+        add(v);
+        build();
+    }
+
+    template<typename T>
+    void add(const vector<T>& v) {
+        for (auto x : v)
+            vals.push_back(x);
+    }
+
+    void build() {
+        sort(vals.begin(), vals.end());
+        vals.erase(unique(vals.begin(), vals.end()), vals.end());
+    }
+
+    int get(long long x) const {
+        return lower_bound(vals.begin(), vals.end(), x) - vals.begin();
+    }
+
+    template<typename T>
+    vector<int> get(const vector<T>& v) const {
+        vector<int> res(v.size());
+        for (int i = 0; i < (int)v.size(); i++) {
+            res[i] = get(v[i]);
+        }
+        return res;
+    }
+
+    long long rev(int idx) const {
+        return vals[idx];
+    }
+
+    int size() const {
+        return vals.size();
+    }
+};

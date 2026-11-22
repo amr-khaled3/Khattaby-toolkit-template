@@ -1,0 +1,53 @@
+struct MedianFinder {
+
+    priority_queue<int> left;
+    priority_queue<int, vector<int>, greater<int>> right;
+
+    long long sumLeft = 0, sumRight = 0;
+
+    void add(int x) {
+
+        if (left.empty() || x <= left.top()) {
+            left.push(x);
+            sumLeft += x;
+        } else {
+            right.push(x);
+            sumRight += x;
+        }
+
+        balance();
+    }
+
+    void balance() {
+
+        while (left.size() > right.size() + 1) {
+            int x = left.top();
+            left.pop();
+            sumLeft -= x;
+
+            right.push(x);
+            sumRight += x;
+        }
+
+        while (right.size() > left.size()) {
+            int x = right.top();
+            right.pop();
+            sumRight -= x;
+
+            left.push(x);
+            sumLeft += x;
+        }
+    }
+
+    double median() {
+        if (left.size() == right.size())
+            return (left.top() + right.top()) / 2.0;
+        return left.top();
+    }
+
+    long long leftSum() const { return sumLeft; }
+    long long rightSum() const { return sumRight; }
+
+    int leftCount() const { return left.size(); }
+    int rightCount() const { return right.size(); }
+};

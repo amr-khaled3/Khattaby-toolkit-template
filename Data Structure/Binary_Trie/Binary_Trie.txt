@@ -1,0 +1,95 @@
+struct BinaryTrie {
+    struct Node {
+        Node *child[2];
+        // int freq[2];
+        int cnt;
+        Node() {
+            child[0] = child[1] = nullptr;
+            // freq[0] = freq[1] = 0;
+            cnt = 0;
+        }
+    };
+    Node* root;
+    BinaryTrie() {
+        root = new Node();
+    }
+
+    void insert(int num) {
+        Node* curr = root;
+        curr->cnt++;               
+        for (int i = 31; i >= 0; i--) {
+            int bit = (num >> i) & 1;
+            if (!curr->child[bit])
+                curr->child[bit] = new Node();
+            curr->freq[bit]++;
+            curr = curr->child[bit];
+            curr->cnt++;
+        }
+    }
+
+
+    void remove(int num, int i, Node* curr) {
+        if (i < 0 || !curr) return;
+
+        int bit = (num >> i) & 1;
+        Node* nxt = curr->child[bit];
+        if (!nxt) return;
+
+        curr->freq[bit]--;
+        remove(num, i - 1, nxt);
+        nxt->cnt--;                 
+        
+    }
+
+    LL maxXor(LL num) {
+        Node* curr = root;
+        LL res = 0;
+        for (int i = 31; i >= 0; i--) {
+            int bit = (num >> i) & 1;
+            if (curr->child[1 - bit] && curr->freq[1 - bit] > 0) {
+                res |= (1LL << i);  
+                curr = curr->child[1 - bit];
+            } else {
+                curr = curr->child[bit];
+            }
+        }
+        return res;
+    }
+    LL minXor(LL num) {
+        Node* curr = root;
+        LL xorNum = 0;
+        for (int i = 31; i >= 0; i--) {
+            int bit = (num >> i) & 1;
+            if (curr -> child[bit] && curr->freq[bit] > 0) {
+                curr = curr->child[bit];
+            } else {
+                xorNum |= (1 << i);
+                curr = curr->child[1 - bit];
+            }
+       }
+         return xorNum;
+    }
+
+LL queryTrie(int x, int k) { // count of numbers y in the trie such that (x ^ y) < k
+    Node* cur = root;
+    LL res = 0;
+
+    for (int bit = 31; bit >= 0; bit--) {
+        if (!cur) break;
+
+        int xb = (x >> bit) & 1;
+        int kb = (k >> bit) & 1;
+
+        if (kb == 1) {
+            if (cur->child[xb])
+                res += (cur->child[xb]->cnt);
+
+            cur = cur->child[xb ^ 1];
+        } else {
+            cur = cur->child[xb];
+        }
+    }
+
+    return res;
+}
+};
