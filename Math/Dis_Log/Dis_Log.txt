@@ -1,0 +1,82 @@
+// Returns minimum x for which a^x % m = b % m.
+ll discrete_log(ll a, ll b, ll m) {
+    if (a == 0) return b == 0 ? 1 : -1;
+    a %= m, b %= m;
+    ll k = 1, add = 0, g;
+    while ((g = gcd(a, m)) > 1) {
+        if (b == k) return add;
+        if (b % g) return -1;
+        b /= g, m /= g, ++add;
+        k = (k * 1ll * a / g) % m;
+    }
+ 
+    ll n = sqrt(m) + 1;
+    ll an = 1;
+    for (int i = 0; i < n; ++i)
+        an = (an * 1ll * a) % m;
+ 
+    unordered_map<ll, ll> vals;
+    for (int q = 0, cur = b; q <= n; ++q) {
+        vals[cur] = q;
+        cur = (cur * 1ll * a) % m;
+    }
+ 
+    for (int p = 1, cur = k; p <= n; ++p) {
+        cur = (cur * 1ll * an) % m;
+        if (vals.count(cur)) {
+            return n * p - vals[cur] + add;
+        }
+    }
+    return -1;
+}
+ 
+ll fast_power(ll a, ll b, ll m){
+    a %= m;
+    ll res = 1;
+    while(b){
+        if(b & 1) res = (1LL * res * a) % m;
+        a = (1LL * a * a) % m;
+        b >>= 1;
+    }
+    return res;
+}
+ 
+ll phi(int n) {
+    ll result = n;
+    for (int i = 2; i * i <= n; i++) {
+        if (n % i == 0) {
+            while (n % i == 0)
+                n /= i;
+            result -= result / i;
+        }
+    }
+    if (n > 1)
+        result -= result / n;
+    return result;
+}
+ 
+// factor unique primes
+vector<ll> factor(ll n) {
+    vector<ll> f;
+    for (int i = 2; i * i <= n; i++) {
+        if (n % i == 0) {
+            f.push_back(i);
+            while (n % i == 0) n /= i;
+        }
+    }
+    if (n > 1) f.push_back(n);
+    return f;
+}
+ 
+// multiplicative order
+ll multiplicative_order(ll a, ll m) {
+    int x = phi(m);
+    vector<ll> primes = factor(x);
+ 
+    for (int p : primes) {
+        while (x % p == 0 && fast_power(a, x / p, m) == 1) {
+            x /= p;
+        }
+    }
+    return x;
+}

@@ -1,0 +1,253 @@
+const int MAX_R = 300000000;
+const int SEGMENT_SIZE = 1000000; 
+
+int segmentedSieve(int l, int r) {
+    int sqrtR = sqrt(r) + 1;
+    
+    // Basic sieve for small primes
+    vector<bool> isPrimeSmall(sqrtR + 1, true);
+    vector<int> primes;
+    isPrimeSmall[0] = isPrimeSmall[1] = false;
+    
+    for (int i = 2; i <= sqrtR; i++) {
+        if (isPrimeSmall[i]) {
+            primes.push_back(i);
+            for (int j = i * i; j <= sqrtR; j += i) {
+                isPrimeSmall[j] = false;
+            }
+        }
+    }
+    
+    // Segmented sieve with bit optimization
+    int count = 0;
+    
+    for (int low = l; low <= r; low += SEGMENT_SIZE) {
+        int high = min(low + SEGMENT_SIZE - 1, r);
+        vector<char> segment(high - low + 1, true);
+        
+        // Mark composites in segment
+        for (int p : primes) {
+            if ((long long)p * p > high) break;
+            
+            long long start = max((long long)p * p, 
+                                 ((long long)low + p - 1) / p * p);
+            
+            // Optimization: skip even multiples
+            if (p == 2) {
+                if (start % 2 == 0) start += p;
+            }
+            
+            for (long long j = start; j <= high; j += p) {
+                segment[j - low] = false;
+            }
+        }
+        
+        // Special handling for low <= 1
+        if (low <= 1) {
+            if (1 >= low && 1 <= high) segment[1 - low] = false;
+            if (0 >= low && 0 <= high) segment[0 - low] = false;
+        }
+        
+        // Count primes ≡ 1 mod 4 or equal to 2 in segment
+        for (int i = low; i <= high; i++) {
+            if (segment[i - low]) {
+                if (i == 2 || i % 4 == 1) {
+                    count++;
+                }
+            }
+        }
+    }
+    
+    return count;
+}
+-------------------------------------------------------------------------------------------------
+void primes(LL n){
+    for (LL i = 2; i <= n; i++)
+    {
+        if (!notPrime[i])
+            prims.push_back(i);
+        for (LL j = i * i; j <= n ; j += i)
+        {
+            notPrime[j] = 1;
+        }
+    }
+}
+-------------------------------------------------------------------------------------------------
+LL next_prime(LL num) {
+    auto it = lower_bound(prims.begin(), prims.end(), num);
+    if (it != prims.end()) {
+        return *it;
+    }
+    return -1;
+}
+-------------------------------------------------------------------------------------------------
+LL largestPrimeFactor(LL n){
+    LL res = 1;
+    for (int i = 0; prims[i] * prims[i] <= n; i++)
+    {
+        while (n % prims[i] == 0)
+        {
+            res = max(res, prims[i]);
+            n /= prims[i];
+        }
+    }
+    return res = max(res, n);
+}
+--------------------------------------------------------------------------------------------------
+const int N = 1e6 + 6;
+bool isPrime[N];
+
+void sieve(){ //O(n)
+    fill(isPrime, isPrime + N, true);
+    isPrime[0] = isPrime[1] = false;
+    for (int i = 2; i * i < N; i++){
+        if(isPrime[i]){
+            for (int m = i * i; m < N; m += i) isPrime[m] = false;
+        }
+    }
+}
+
+---------------------------------------------------------------------------------------------------
+bool isPrime(int n){ //O(sqrt(n))
+    if(n <= 1) return false;
+    for (int i = 2; i * i <= n; i++)
+        if (n % i == 0)  return false;
+    return true;
+}
+--------------------------------------------------------------------------------------------------
+void buildSPF() {
+    for (int i = 1; i < N; i++) spf[i] = i;
+
+    for (int i = 2; i * i < N; i++) {
+        if (spf[i] == i) { 
+            for (int j = i * i; j < N; j += i) {
+                if (spf[j] == j) spf[j] = i;
+            }
+        }
+    }
+}
+
+
+void bulidCnt(){
+    cnt[1] = 0;
+    for (int i = 2; i < N; i++){
+        cnt[i] = cnt[i / spf[i]] + 1;
+    }
+}
+
+void bulidPref(){
+    pref[0] = 0;
+    for (int i = 1; i < N; i++){
+        pref[i] = pref[i - 1] + cnt[i];
+    }
+}
+------------------------------------------------------------------------------------------------------
+vector <pair<int, int>> getPrimeFactor(LL n){ //O(sqrt(n))
+    vector <pair<int, int>> ret;
+    for (int p = 2; p * p <= n; p++){
+        int e = 0;
+        while(n % p == 0){
+            n /= p;
+            e++;
+        }
+        if(e > 0) ret.push_back({p, e});
+    }
+    if (n > 1) ret.push_back({n, 1});
+    return ret;
+}
+
+------------------------------------------------------------------------------------------------------------
+const int MAXN = 1e6 + 5;
+char primes[MAXN];
+int phi[MAXN];
+
+void phi_generator() {
+    memset(primes, 1, sizeof(primes));
+
+    for (int i = 0; i < MAXN; i++)
+        phi[i] = i;
+
+    primes[0] = primes[1] = 0;
+
+    for (int i = 2; i < MAXN; i++) {
+        if (primes[i]) {
+            for (int j = i; j < MAXN; j += i) {
+                primes[j] = 0;
+                phi[j] -= phi[j] / i;
+            }
+        }
+    }
+}
+-------------------------------------------------------------------------------------------------------------
+LL phi_factn(int n){
+    LL res = 1;
+    for (int i = 2; i <= n; i++)
+        res = ret * (isPrime(i) ? i - 1 : i);
+    return res;
+}
+-------------------------------------------------------------------------------------------------------------
+
+const int MAXN = 10000000 + 5;
+int mu[MAXN];
+bool prime[MAXN];
+
+void mobiusSieve() {
+    for (int i = 1; i < MAXN; i++) {
+        mu[i] = 1;
+        prime[i] = true;
+    }
+
+    prime[0] = prime[1] = false;
+
+    for (int i = 2; i < MAXN; i++) {
+        if (prime[i]) {
+
+            for (int j = i + i; j < MAXN; j += i)
+                prime[j] = false;
+
+            for (int j = i; j < MAXN; j += i)
+                mu[j] *= -1;
+
+            long long sq = 1LL * i * i;
+
+            for (long long j = sq; j < MAXN; j += sq)
+                mu[j] = 0;
+        }
+    }
+}
+
+-----------------------------------------------------------------------------------------------------------
+const int MAXN = 1e6 + 5;
+vector<int> spf(MAXN + 1, 1);
+
+void sieve()
+{
+
+    spf[0] = 0;
+    for (int i = 2; i <= MAXN; i++) {
+        if (spf[i] == 1) { 
+            for (int j = i; j <= MAXN; j += i) {
+                if (spf[j]== 1) 
+            
+                    spf[j] = i;
+            }
+        }
+    }
+}
+
+vector<vector<int>> getFactorization(vector<int> arr)
+{
+    sieve();
+    vector<vector<int>> ret;
+    for(int i = 0; i < arr.size(); i++){
+        vector<int> Pfactors;
+        int x = arr[i];
+        while (x != 1) {
+            Pfactors.push_back(spf[x]);
+            x = x / spf[x];
+        }
+        ret.push_back(Pfactors);
+    }
+    return ret;
+}
+

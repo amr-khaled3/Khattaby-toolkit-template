@@ -1,0 +1,71 @@
+long long factorial[N];
+long long inv_factorial[N];
+void precomputeFactorials() {
+	factorial[0] = inv_factorial[0] = 1;
+	for (int i = 1; i < N; i++) {
+		factorial[i] = (factorial[i - 1] * i) % MOD;
+		inv_factorial[i] = powMod(factorial[i], MOD - 2); 
+    }
+}
+-------------------------------------------------------------------------------
+// Function to compute nPr using precomputed factorials
+LL nPr(int n, int r) {
+    if (r > n) return 0;
+    return (factorial[n] * inv_factorial[n - r]) % MOD;
+}
+--------------------------------------------------------------------------------------------
+// Function to find binomial coefficient
+long long nCr(long long n, long long r) {
+	if (r > n) return 0;
+	long long ans = (factorial[n] * inv_factorial[r]) % MOD;
+	ans = (ans * inv_factorial[n - r]) % MOD;
+	return ans;
+}
+------------------------------------------------------------------------------------
+// Where N up to 1e18
+ll nCr(ll n, ll r) {
+    if (r < 0 || r > n)
+        return 0;
+
+    r = min(r, n - r);
+
+    ll ans = 1;
+
+    for (ll i = 1; i <= r; i++) {
+        ans = ans * ((n - i + 1) % MOD) % MOD;
+        ans = ans * powMod(i, MOD - 2) % MOD;
+    }
+
+    return ans;
+}
+--------------------------------------------------------------------------------------------
+ll nPr(ll n, ll r) {
+    if (r < 0 || n < 0 || r > n) return 0;
+
+    ll ans = 1;
+    for (ll i = 0; i < r; i++) {
+        ans = (ans * ((n - i) % MOD)) % MOD;
+    }
+    return ans;
+}
+---------------------------------------------------------------------------------------------
+long long starsAndBars(long long n, long long k, bool allowEmpty = true) {
+    if (allowEmpty) {
+        return nCr(n + k - 1, k - 1);
+    }
+    return nCr(n - 1, k - 1);
+}
+---------------------------------------------------------------------------------------------
+ll catalan(int n) {
+    if (n < 0) return 0;
+    ll ans = nCr(2 * n, n);
+    return (ans * modInv(n + 1)) % MOD;
+}
+----------------------------------------------------------------------------------------------
+void precomputeDerangements() {
+    derangement[0] = 1;
+    if (N > 1) derangement[1] = 0;
+    for (int i = 2; i < N; i++) {
+        derangement[i] = ((i - 1) * ((derangement[i - 1] + derangement[i - 2]) % MOD)) % MOD;
+    }
+}

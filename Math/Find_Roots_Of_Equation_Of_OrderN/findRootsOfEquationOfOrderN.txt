@@ -1,0 +1,30 @@
+
+double evalPoly(const vector<double> &coeffs, double x) {
+    double res = 0;
+    double xn = 1;
+    for (auto c : coeffs) {
+        res += c * xn;
+        xn *= x;
+    }
+    return res;
+}
+
+double findRoot(const vector<double> &coeffs, double l, double r) {
+    double fl = evalPoly(coeffs, l);
+    double fr = evalPoly(coeffs, r);
+    if (fl * fr > 0) return NAN; 
+
+    for (int iter = 0; iter < 100; iter++) {
+        double mid = (l + r) / 2;
+        double fmid = evalPoly(coeffs, mid);
+        if (fabs(fmid) < EPS) return mid;
+        if (fl * fmid <= 0) {
+            r = mid;
+            fr = fmid;
+        } else {
+            l = mid;
+            fl = fmid;
+        }
+    }
+    return (l + r) / 2;
+}
