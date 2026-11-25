@@ -1,0 +1,111 @@
+#include <bits/stdc++.h>
+using namespace std;
+
+struct HashSegTree {
+    using ll = long long;
+    using Hash = pair<ll, ll>;
+
+    static constexpr ll MOD1 = 1'000'000'007LL, BASE1 = 31LL;
+    static constexpr ll MOD2 = 1'000'000'009LL, BASE2 = 53LL;
+
+    struct Node {
+        ll h1, h2;
+        Node() : h1(0), h2(0) {}
+        Node(ll _h1, ll _h2) : h1(_h1), h2(_h2) {}
+    };
+
+    int tree_size;
+    vector<Node> SegData;
+    vector<ll> pw1, pw2, invPw1, invPw2;
+
+    static ll fastPow(ll base, ll exp, ll mod) {
+        ll res = 1;
+        for (base %= mod; exp > 0; exp >>= 1) {
+            if (exp & 1) res = res * base % mod;
+            base = base * base % mod;
+        }
+        return res;
+    }
+
+    static ll inv(ll x, ll mod) { return fastPow(x, mod - 2, mod); }
+    static int charVal(char c) { return c - 'a' + 1; }
+
+    explicit HashSegTree(int n) {
+        tree_size = 1;
+        while (tree_size < n) tree_size *= 2;
+        SegData.assign(2 * tree_size, Node());
+
+        // حساب قوى الأساس ومعكوسها الضربي
+        pw1.resize(n + 1);    pw2.resize(n + 1);
+        invPw1.resize(n + 1); invPw2.resize(n + 1);
+        pw1[0] = pw2[0] = invPw1[0] = invPw2[0] = 1;
+
+        ll ib1 = inv(BASE1, MOD1), ib2 = inv(BASE2, MOD2);
+        for (int i = 1; i <= n; i++) {
+            pw1[i]    = pw1[i - 1]    * BASE1 % MOD1;
+            pw2[i]    = pw2[i - 1]    * BASE2 % MOD2;
+            invPw1[i] = invPw1[i - 1] * ib1   % MOD1;
+            invPw2[i] = invPw2[i - 1] * ib2   % MOD2;
+        }
+    }
+
+    // دمج بسيط جداً: مجرد جمع!
+    Node merge(const Node &lf, const Node &ri) const {
+        return Node((lf.h1 + ri.h1) % MOD1, (lf.h2 + ri.h2) % MOD2);
+    }
+
+    // إنشاء ورقة للحرف c في الموقع idx
+    Node makeLeaf(int idx, char c) const {
+        ll v = charVal(c);
+        return Node(v * pw1[idx] % MOD1, v * pw2[idx] % MOD2);
+    }
+
+    void init(const string &s, int ni, int lx, int rx) {
+        if (rx - lx == 1) {
+            if (lx < (int)s.size())
+                SegData[ni] = makeLeaf(lx, s[lx]);
+            return;
+        }
+        int mid = (rx + lx) / 2;
+        init(s, 2 * ni + 1, lx, mid);
+        init(s, 2 * ni + 2, mid, rx);
+        SegData[ni] = merge(SegData[2 * ni + 1], SegData[2 * ni + 2]);
+    }
+
+    void init(const string &s) {
+        init(s, 0, 0, tree_size);
+    }
+
+    void set(int idx, char val, int ni, int lx, int rx) {
+        if (rx - lx == 1) {
+            SegData[ni] = makeLeaf(idx, val);
+            return;
+        }
+        int mid = (rx + lx) / 2;
+        if (idx < mid) set(idx, val, 2 * ni + 1, lx, mid);
+        else           set(idx, val, 2 * ni + 2, mid, rx);
+        SegData[ni] = merge(SegData[2 * ni + 1], SegData[2 * ni + 2]);
+    }
+
+    void set(int idx, char val) {
+        set(idx, val, 0, 0, tree_size);
+    }
+
+    Node get(int l, int r, int ni, int lx, int rx) const {
+        if (lx >= l && rx <= r) return SegData[ni];
+        if (lx >= r || rx <= l) return Node();
+
+        int mid = (rx + lx) / 2;
+        Node lf = get(l, r, 2 * ni + 1, lx, mid);
+        Node ri = get(l, r, 2 * ni + 2, mid, rx);
+        return merge(lf, ri);
+    }
+
+    // استعلام الهاش للنطاق [l, r) بحيث r غير داخل في النطاق
+    Hash substringHash(int l, int r) const {
+        Node res = get(l, r, 0, 0, tree_size);
+        ll h1 = res.h1 * invPw1[l] % MOD1;
+        ll h2 = res.h2 * invPw2[l] % MOD2;
+        return {h1, h2};
+    }
+};

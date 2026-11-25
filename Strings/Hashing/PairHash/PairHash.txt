@@ -1,0 +1,25 @@
+// 1. Recommended: Anti-Hash Safe PairHash using splitmix64 + runtime random seed
+struct PairHash {
+    static uint64_t splitmix64(uint64_t x) {
+        x += 0x9e3779b97f4a7c15ULL;
+        x = (x ^ (x >> 30)) * 0xbf58476d1ce4e5b9ULL;
+        x = (x ^ (x >> 27)) * 0x94d049bb133111ebULL;
+        return x ^ (x >> 31);
+    }
+
+    template <typename T1, typename T2>
+    size_t operator()(const pair<T1, T2>& p) const {
+        static const uint64_t FIXED_RANDOM =
+            chrono::steady_clock::now().time_since_epoch().count();
+        uint64_t h1 = splitmix64((uint64_t)p.first + FIXED_RANDOM);
+        uint64_t h2 = splitmix64((uint64_t)p.second + FIXED_RANDOM);
+        return (size_t)(h1 ^ (h2 << 1));
+    }
+};
+
+// 2. Lightweight Alternative (for non-adversarial inputs / offline tasks)
+struct FastPairHash {
+    size_t operator()(const pair<long long, long long>& p) const {
+        return (size_t)((uint64_t)p.first ^ ((uint64_t)p.second << 32));
+    }
+};

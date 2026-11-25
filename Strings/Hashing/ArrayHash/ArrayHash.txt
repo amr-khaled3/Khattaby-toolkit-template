@@ -1,0 +1,31 @@
+struct ArrayHash {
+    static const LL MOD  = 1e9 + 7;
+    static const LL BASE = 911382323;
+
+    vector<LL> pref, pw;
+
+    ArrayHash(const vector<int>& a) {
+        int n = a.size();
+
+        pref.resize(n + 1, 0);
+        pw.resize(n + 1, 1);
+
+        for (int i = 1; i <= n; i++) {
+            pw[i] = (pw[i - 1] * BASE) % MOD;
+        }
+
+        for (int i = 0; i < n; i++) {
+            pref[i + 1] =
+                (pref[i] * BASE + a[i] + 1000000) % MOD;
+        }
+    }
+
+    LL getHash(int l, int r) {
+        LL h =
+            (pref[r + 1]
+            - pref[l] * pw[r - l + 1]) % MOD;
+
+        if (h < 0) h += MOD;
+        return h;
+    }
+};

@@ -1,0 +1,70 @@
+struct Manacher {
+  vector<int> p[2];
+
+  // p[1][i] = نصف طول أكبر palindrome فردي مركزه عند i
+  // يعني الطول الحقيقي = 2 * p[1][i] + 1
+  //
+  // p[0][i] = نصف طول أكبر palindrome زوجي
+  // ويعتبر i هو الـ right center
+  // يعني الطول الحقيقي = 2 * p[0][i]
+  //
+  // مثال:
+  // s = "abbabba"
+  // p[1][3] = 3  -> palindrome طوله 7
+  // p[0][2] = 2  -> palindrome طوله 4
+
+  Manacher(string s) {
+    int n = s.size();
+
+    // p[0] للـ even palindromes
+    // p[1] للـ odd palindromes
+    p[0].resize(n + 1);
+    p[1].resize(n);
+
+    // z = 0 -> even
+    // z = 1 -> odd
+    for (int z = 0; z < 2; z++) {
+
+      // [l , r] هو أكبر palindrome وصلناله حاليا
+      for (int i = 0, l = 0, r = 0; i < n; i++) {
+
+        // t = المسافة من i لآخر اليمين
+        int t = r - i + !z;
+
+        // لو i جوه palindrome معروف
+        // نستخدم الـ mirror لتقليل المقارنات
+        if (i < r)
+          p[z][i] = min(t, p[z][l + t]);
+
+        // حدود الـ palindrome الحالي
+        int L = i - p[z][i];
+        int R = i + p[z][i] - !z;
+
+        // نحاول نوسّع الـ palindrome
+        while (L >= 1 && R + 1 < n &&
+               s[L - 1] == s[R + 1]) {
+          p[z][i]++;
+          L--, R++;
+        }
+
+        // لو وصلنا palindrome أكبر نحدّث [l , r]
+        if (R > r)
+          l = L, r = R;
+      }
+    }
+  }
+
+  // يتحقق هل substring من l إلى r palindrome أم لا
+  bool is_palindrome(int l, int r) {
+
+    // المنتصف
+    int mid = (l + r + 1) / 2;
+
+    // الطول
+    int len = r - l + 1;
+
+    // لو palindrome فردي -> نستخدم p[1]
+    // لو زوجي -> نستخدم p[0]
+    return 2 * p[len % 2][mid] + len % 2 >= len;
+  }
+};

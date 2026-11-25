@@ -1,0 +1,112 @@
+struct RollingHash {
+ 
+    using ll = long long;
+ 
+    static constexpr ll MOD1  = 1'000'000'007LL, BASE1 = 31LL;
+    static constexpr ll MOD2  = 1'000'000'009LL, BASE2 = 53LL;
+ 
+    using Hash = pair<ll, ll>;
+ 
+    vector<ll> pw1, pw2, invPw1, invPw2;
+ 
+    vector<ll> pref1, pref2;
+
+    static ll fastPow(ll base, ll exp, ll mod) {
+        ll res = 1;
+        for (base %= mod; exp > 0; exp >>= 1) {
+            if (exp & 1) res = res * base % mod;
+            base = base * base % mod;
+        }
+        return res;
+    }
+    static ll inv(ll x, ll mod) { return fastPow(x, mod - 2, mod); }
+ 
+    static int charVal(char c) { return c - 'a' + 1; }  
+ 
+    explicit RollingHash(int maxLen) {
+        pw1.resize(maxLen + 1);   pw2.resize(maxLen + 1);
+        invPw1.resize(maxLen + 1); invPw2.resize(maxLen + 1);
+ 
+        pw1[0] = pw2[0] = invPw1[0] = invPw2[0] = 1;
+ 
+        ll ib1 = inv(BASE1, MOD1), ib2 = inv(BASE2, MOD2);
+ 
+        for (int i = 1; i <= maxLen; i++) {
+            pw1[i]    = pw1[i-1]    * BASE1 % MOD1;
+            pw2[i]    = pw2[i-1]    * BASE2 % MOD2;
+            invPw1[i] = invPw1[i-1] * ib1   % MOD1;
+            invPw2[i] = invPw2[i-1] * ib2   % MOD2;
+        }
+    }
+
+    void build(const string& s) {
+        int n = (int)s.size();
+        pref1.assign(n, 0);
+        pref2.assign(n, 0);
+ 
+        for (int i = 0; i < n; i++) {
+            ll v = charVal(s[i]);
+            pref1[i] = v * pw1[i] % MOD1;
+            pref2[i] = v * pw2[i] % MOD2;
+            if (i) {
+                pref1[i] = (pref1[i] + pref1[i-1]) % MOD1;
+                pref2[i] = (pref2[i] + pref2[i-1]) % MOD2;
+            }
+        }
+    }
+ 
+    Hash substringHash(int l, int r) const {
+        ll h1 = pref1[r], h2 = pref2[r];
+        if (l > 0) {
+            h1 = (h1 - pref1[l-1] + MOD1) % MOD1;
+            h2 = (h2 - pref2[l-1] + MOD2) % MOD2;
+        }
+        h1 = h1 * invPw1[l] % MOD1;
+        h2 = h2 * invPw2[l] % MOD2;
+        return {h1, h2};
+    }
+};
+
+
+
+----------------------------------------------------------------------------------------------
+auto isPalindrome = [&](int l, int r) {
+    auto h1 = hs.substringHash(l, r); // Main string
+
+    int rl = n - 1 - r;
+    int rr = n - 1 - l;
+
+    auto h2 = hr.substringHash(rl, rr); // Reversed String
+
+    return h1 == h2;
+};
+-----------------------------------------------------------------------------------------------
+// > 0, = 1, < 2
+ll cmp(ll l1, ll r1, ll l2, ll r2, const RollingHash& sHash) {
+    if (sHash.substringHash(l1, r1) ==
+        sHash.substringHash(l2, r2))
+        return 1;
+
+    ll sz = r1 - l1 + 1;
+
+    ll l = 0, r = sz;
+
+    while (l < r) {
+        ll m = l + (r - l + 1) / 2;
+
+        if (sHash.substringHash(l1, l1 + m - 1) ==
+            sHash.substringHash(l2, l2 + m - 1))
+            l = m;
+        else
+            r = m - 1;
+    }
+
+    if (s[l1 + l] > s[l2 + l])
+        return 0;
+
+    if (s[l1 + l] < s[l2 + l])
+        return 2;
+
+    return 1;
+}
+-----------------------------------------------------------------------------------------------------

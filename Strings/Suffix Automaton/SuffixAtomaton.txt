@@ -1,0 +1,45 @@
+struct SuffixAutomaton
+{
+    static const int A = 26;
+    struct State
+    {
+        int len = 0, lnk = -1, cnt = 0;
+        array<int, A> nxt;
+        State() { nxt.fill(-1); }
+    };
+    vector<State> t{ { } };
+    int lst = 0;
+    SuffixAutomaton(string &s)
+    { for(char &ch: s) insert(ch); }
+    void insert(int ch)
+    {
+        int c = ch - 'a', me = t.size(), p = lst;
+        t.push_back({ });
+        t[me].len = t[p].len + 1;
+        t[me].cnt = 1;
+        t[me].lnk = 0;
+        lst = me;
+        while(~p && t[p].nxt[c] == -1)
+            t[p].nxt[c] = me, p = t[p].lnk;
+        if(p == -1) return;
+        int q = t[p].nxt[c];
+        if(t[q].len == t[p].len + 1)
+        { t[me].lnk = q; return; }
+        int clone = t.size(); t.push_back(t[q]);
+        t[clone].len = t[p].len + 1, t[clone].cnt = 0;
+        while (~p && t[p].nxt[c] == q)
+            t[p].nxt[c] = clone, p = t[p].lnk;
+        t[q].lnk = t[me].lnk = clone;
+    }
+    int move(int v, char &c)
+    { return ~v? t[v].nxt[c - 'a'] : -1; }
+    void preCount()
+    {
+        vector<array<int, 2>> v;
+        for(int i = 0; i < t.size(); ++i)
+            v.push_back({ t[i].len, i });
+        sort(v.rbegin(), v.rend());
+        for(auto &[_, i]: v)
+            if(i) t[t[i].lnk].cnt += t[i].cnt;
+    }
+};
