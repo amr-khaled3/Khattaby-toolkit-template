@@ -1,0 +1,34 @@
+using ll = long long;
+
+template <typename W>
+pair<ll, vector<pair<int, int>>> kruskalMST(int n, const vector<pair<int, W>> adj[]) {
+    vector<tuple<W, int, int>> edges;
+
+    for (int u = 1; u <= n; ++u) {
+        for (const auto& [v, w] : adj[u]) {
+            if (u < v) {
+                edges.emplace_back(w, u, v);
+            }
+        }
+    }
+
+    sort(edges.begin(), edges.end());
+
+    DSU dsu(n);
+    ll total_weight = 0;
+    vector<pair<int, int>> mst_edges;
+    mst_edges.reserve(n - 1);
+
+    for (const auto& [w, u, v] : edges) {
+        if (dsu.merge(u, v)) {
+            total_weight += w;
+            mst_edges.emplace_back(u, v);
+
+            if ((int)mst_edges.size() == n - 1) {
+                break;
+            }
+        }
+    }
+
+    return {total_weight, mst_edges};
+}

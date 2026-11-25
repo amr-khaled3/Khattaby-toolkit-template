@@ -1,0 +1,33 @@
+pair<int,int> bfs(int src) {
+    int n = adj.size();
+    vector<int> dist(n, -1);
+
+    queue<int> q;
+    q.push(src);
+    dist[src] = 0;
+
+    while (!q.empty()) {
+        int u = q.front();
+        q.pop();
+
+        for (int v : adj[u]) {
+            if (dist[v] == -1) {
+                dist[v] = dist[u] + 1;
+                q.push(v);
+            }
+        }
+    }
+
+    int far = src;
+    for (int i = 0; i < n; i++)
+        if (dist[i] > dist[far])
+            far = i;
+
+    return {far, dist[far]};
+}
+
+int diameter() {
+    auto [A, _] = bfs(0);
+    auto [B, diam] = bfs(A);
+    return diam;
+}
